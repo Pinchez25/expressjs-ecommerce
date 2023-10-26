@@ -1,0 +1,50 @@
+.form-control {
+    margin: 1rem 0;
+}
+
+.form-control :is(label, input, textarea) {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.25rem;
+
+}
+
+.form-control :is(input, textarea) {
+    border: 1px solid #a1a1a1;
+    font: inherit;
+    border-radius: 2px;
+    padding: .5rem;
+}
+
+.submit-btn {
+    text-align: center;
+}
+
+input[type='submit'] {
+    font: inherit;
+    border: 1px solid #00695c;
+    color: #00695c;
+    background: white;
+    border-radius: 3px;
+    cursor: pointer;
+    padding: .7rem 4.5rem;
+}
+
+input[type='submit']:is(:hover, :active) {
+    background-color: #00695c;
+    color: white;
+}
+
+.form-control :is(input:focus, textarea:focus) {
+    outline-color: #00695c;
+}
+
+.form-control :is(label, input, textarea) {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.25rem;
+}
+.form-control input.invalid {
+    border-color: red;
+}
+p::f

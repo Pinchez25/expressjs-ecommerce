@@ -1,0 +1,44 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/forms.css">
+<link rel="stylesheet" href="/css/auth.css">
+</head>
+
+<body>
+  <%- include('../includes/navbar.ejs') %>
+  <main>
+    <form class="login-form" action="/auth/login" method="post">
+      <% if (errorMessages.length>0) { %>
+      <ul class="message error-message">
+        <% errorMessages.forEach(function(message){ %>
+        <li><%= message.msg %></li><br>
+        <% }) %>
+      </ul>
+      <% } %>
+
+      <% if (errorMessage) { %>
+      <div class="message error-message second">
+        <p><%= errorMessage %></p>
+      </div>
+      <% } %>
+
+      <div class="form-control">
+        <label for="email">E-Mail:</label>
+        <input class="<%= errorMessages.find(e=>e.path === 'email')?'invalid':'' %>" type="email" name="email" id="email" value="<%= oldInput.email %>" required>
+      </div>
+      <div class="form-control">
+        <label for="password">Password:</label>
+        <input class="<%= errorMessages.find(e=>e.path === 'password')?'invalid':'' %>" type="password" name="password" id="password" value="<%= oldInput.password %>" required>
+      </div>
+      <div class="submit-btn">
+        <input type="submit" value="Sign In">
+      </div>
+    </form>
+    <div class="centered">
+      <p>Don't have an account? <a href="/auth/register">Sign up</a></p>
+    </div>
+    <div class="centered">
+      <p>Forgot your password? <a href="/auth/reset-password">Reset</a></p>
+    </div>
+
+  </main>
+  <%- include('../includes/end.ejs') %>
