@@ -8,10 +8,13 @@
         <ul class="orders">
             <% for (const order of orders){ %>
                 <li class="orders__item">
-                    <h1><%= order?._id %></h1><small>by <%= order.user.name %></small>
+                    <h1><%= order?._id %></h1><small>by <%= order.user.name %></small>- <a
+                            href="/orders/<%= order._id %>/">Invoice</a>
                     <ul class="orders__products">
                         <% for (const product of order.products /*order['order-item']*/) { %>
-                            <li class="orders__products-item"><%= product.product.title %>(<%= product.quantity %>)</li>
+                            <li class="orders__products-item">
+                                <%= product.product.title %>(<%= product.quantity %>)
+                            </li>
                         <% } %>
                     </ul>
                 </li>

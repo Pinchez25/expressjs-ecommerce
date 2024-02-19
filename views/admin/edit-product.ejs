@@ -5,28 +5,46 @@
 <body>
 <%- include('../includes/navbar.ejs') %>
 <main>
-    <form class="product-form" action="<% if (editing) { %> /edit-product <% }else{%>/product<%}%>" method="post">
-        
-        <input type="hidden" value="<% if (editing) { %><%= product?._id %><% }%>" name="product_id">
+    <% if (hasError) { %>
+    <% if(errorMessage.length>0){ %>
+        <% for(const error of errorMessage){ %>
+            <div class="message error-message">
+                <h1><%= error.msg %></h1>
+            </div>
+        <% } %>
+    <% } %>
+    <% } %>
+    <form class="product-form" action="<% if (editing) { %> /edit-product <% }else{ %>/product<% } %>" method="post" enctype="multipart/form-data">
+
+        <input type="hidden" value="<% if (editing) { %><%= product?._id %><% } %>" name="product_id">
         <div class="form-control">
             <label for="title">Product:</label>
-            <input type="text" name="title" id="title" value="<% if (editing) { %><%= product?.title %><% }%>" required>
+            <input type="text" name="title" id="title"
+                   value="<% if (editing || hasError) { %><%= product?.title %><% } %>" required>
         </div>
         <div class="form-control">
             <label for="image">Image:</label>
-            <input type="text" name="image" id="image" value="<% if (editing) { %><%= product?.image %><% }%>" required>
+            <input type="file" name="image" id="image">
+            <!--
+            <input type="text" name="image" id="image"
+                   value="<% if (editing || hasError) { %><%= product?.image %><% } %>" required>
+            -->
         </div>
         <div class="form-control">
             <label for="price">Price: </label>
-            <input type="number" name="price" id="price" value="<% if (editing) { %><%= product?.price %><% }%>" step="0.01" required>
+            <input type="number" name="price" id="price"
+                   value="<% if (editing || hasError) { %><%= product?.price %><% } %>" step="0.01" required>
         </div>
         <div class="form-control">
             <label for="description">Description:</label>
-            <textarea name="description" id="description" rows="5"  required><% if (editing) { %><%= product?.description %><% }%></textarea>
+            <textarea name="description" id="description" rows="5" required>
+                <% if (editing || hasError) { %><%= product?.description %>
+                <% } %>
+            </textarea>
         </div>
         <div class="submit-btn">
             <input type="submit"
-                   value="<% if (editing) {%> Edit <% }else{ %> Add +<%}%> ">
+                   value="<% if (editing) { %> Edit <% }else{ %> Add +<% } %> ">
         </div>
     </form>
 </main>

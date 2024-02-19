@@ -1,5 +1,6 @@
 const express = require('express')
-const onlyAuthenticatedUsers = require('../middleware/is-authenticated')
+const onlyAuthenticatedUsers = require('../middleware/is-authenticated');
+const {validateProduct} = require('../validations/admin')
 
 const {
     addNewProduct,
@@ -14,15 +15,16 @@ const router = express.Router()
 
 router.get('/add-product', onlyAuthenticatedUsers, getAddProduct)
 
-router.post('/product', onlyAuthenticatedUsers, addNewProduct)
+router.post('/product',validateProduct, onlyAuthenticatedUsers, addNewProduct)
 
 router.get('/admin-products', onlyAuthenticatedUsers, getAdminProducts)
 
 router.get('/edit-product/:productId', onlyAuthenticatedUsers, getEditProduct)
 
-router.post('/edit-product', onlyAuthenticatedUsers, postEditProduct)
+router.post('/edit-product',validateProduct ,onlyAuthenticatedUsers, postEditProduct)
 
-router.post('/delete-product', onlyAuthenticatedUsers, deleteProduct)
+// router.post('/delete-product', onlyAuthenticatedUsers, deleteProduct)
+router.delete('/product/:productId', onlyAuthenticatedUsers, deleteProduct)
 
 
 module.exports = {adminRoutes: router}

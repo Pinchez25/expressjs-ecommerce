@@ -9,13 +9,14 @@ const debug = require('debug')('express-commerce-site:server');
 const http = require('http');
 const mongoose = require('mongoose')
 const User = require('../models/user')
+const ngrok = require('ngrok')
 /**
  * Get port from environment and store in Express.
  */
 
 const port = normalizePort(process.env.PORT || '8000');
 app.set('port', port);
-
+const HOST = '127.0.0.1'
 /**
  * Create HTTP server.
  */
@@ -38,8 +39,15 @@ mongoose.connect('mongodb://127.0.0.1:27017/duka')
     //     return user.save()
     // })
     .then(() => {
-        server.listen(port,()=>{
-            console.log(`http://localhost:${port}`)
+        server.listen(port,HOST,async ()=>{
+            try {
+                const url = await ngrok.connect(port)
+                console.log(url)
+            } catch (e) {
+                console.log(e.message)
+            }finally {
+                console.log(`http://${HOST}:${port}`)
+            }
         });
         server.on('error', onError);
         server.on('listening', onListening);
@@ -104,5 +112,5 @@ function onListening() {
     const bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port;
-    debug('Listening on ' + bind + `http:\\localhost:${addr}`);
+    debug('Listening on ' + bind + `http:\\${HOST}:${addr}`);
 }

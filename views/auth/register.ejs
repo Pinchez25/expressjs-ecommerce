@@ -24,13 +24,13 @@
         <div class="form-control">
             <label for="username">Username</label>
             <input
-                    class="<%= errorMessage.find(e=>e.path === 'username')?'invalid':'' %>"
+                    
                     type="text" name="username" id="username" value="<%= oldInput.username %>">
         </div>
         <div class="form-control">
             <label for="email">E-Mail</label>
             <input
-                    class="<%= errorMessage.find(e=>e.path === 'email')?'invalid':'' %>"
+                    
                     type="email" name="email" id="email" value="<%= oldInput.email %>">
         </div>
         <div class="form-control">
@@ -42,7 +42,7 @@
         <div class="form-control">
             <label for="confirmPassword">Confirm Password</label>
             <input
-                    class="<%= errorMessage.find(e=>e.path === 'confirmPassword')?'invalid':'' %>"
+                    
                     type="password" name="confirmPassword" id="confirmPassword" value="<%= oldInput.confirmPassword %>">
         </div>
         <div class="centered">

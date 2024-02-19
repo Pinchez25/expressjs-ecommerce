@@ -1,4 +1,4 @@
-<%- include('../includes/head.ejs')  %>
+<%- include('../includes/head.ejs') %>
 </head>
 <body>
 <%- include('../includes/navbar.ejs') %>
@@ -25,10 +25,7 @@
                     </div>
                     <div class="card__actions">
                         <a href="/edit-product/<%= product?._id %>?edit=true" class="btn edit-btn">Edit</a>
-                        <form action="/delete-product" method="post">
-                            <input type="hidden" value="<%= product?._id %>" name="productId">
-                            <button class="btn" type="submit">Delete</button>
-                        </form>
+                        <button class="btn btn-delete-product" data-product_id="<%= product?.id %>" type="button">Delete</button>
                     </div>
                 </article>
 
@@ -38,6 +35,7 @@
         <h1>No Products found!</h1>
     <% } %>
 </main>
+<script src="/js/admin.js"></script>
 <%- include('../includes/end.ejs') %>
 
 

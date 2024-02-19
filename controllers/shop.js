@@ -1,18 +1,32 @@
+//<editor-fold desc={"new"}>
 const Product = require('../models/product');
 const Order = require('../models/order');
+const path = require("path");
+const fs = require("fs");
+const PDFDocument = require('pdfkit');
+const stripe = require('stripe')('sk_test_51O8KsmH3LN9D5uVF5AIgfW0B2vRSQ98vugTLX0fNXVQ5ENuDXaoKA2HUUwqNbG0fll3IXms8tBXdGXQx7gmFjrd100WduSjBVe');
+const ITEMS_PER_PAGE = 3;
 
-const getIndex = async (req, res) => {
+
+const getIndex = async (req, res, next) => {
+    const page = +req.query.page || 1;
     try {
-        const products = await Product.find();
+        const numberOfProducts = await Product.find().countDocuments()
+        const products = await Product.find().skip((page - 1) * ITEMS_PER_PAGE).limit(ITEMS_PER_PAGE);
         res.render('shop/index', {
             pageTitle: 'Karibu Dukani',
             products: products,
             path: '/',
             isAuthenticated: req.session.isLoggedIn,
-            
+            currentPage: page,
+            hasNextPage: ITEMS_PER_PAGE * page < numberOfProducts,
+            hasPreviousPage: page > 1,
+            nextPage: page + 1,
+            previousPage: page - 1,
+            lastPage: Math.ceil(numberOfProducts / ITEMS_PER_PAGE),
         });
     } catch (err) {
-        console.error(err);
+        return next(err)
     }
 }
 
@@ -25,7 +39,7 @@ const getProducts = async (req, res) => {
             pageTitle: "All Products",
             path: '/products',
             isAuthenticated: req.session.isLoggedIn,
-            
+
         });
     } catch (err) {
         console.error(err);
@@ -41,7 +55,7 @@ const getProductDetails = async (req, res) => {
             pageTitle: product.title,
             path: `/product/${product_id}`,
             isAuthenticated: req.session.isLoggedIn,
-            
+
         });
     } catch (err) {
         console.error(err);
@@ -59,7 +73,7 @@ const getUserCart = async (req, res) => {
             path: '/cart',
             products: products,
             isAuthenticated: req.session.isLoggedIn,
-            
+
         })
     } catch (err) {
         console.error(err);
@@ -93,7 +107,7 @@ const getOrders = async (req, res) => {
             path: '/orders',
             orders: orders,
             isAuthenticated: req.session.isLoggedIn,
-            
+
         })
     } catch (err) {
         console.error(err);
@@ -122,4 +136,120 @@ const createOrder = async (req, res) => {
     }
 }
 
-module.exports = {getIndex, getProducts, getProductDetails, addToCart, getUserCart, removeFromCart, createOrder, getOrders}
+const getInvoice = async (req, res, next) => {
+    const doc = new PDFDocument();
+    try {
+        const {orderId} = req.params;
+        const order = await Order.findById(orderId);
+        //const orders = await Order.find({'user.userId': req.user._id})
+        if (!order) {
+            return next(Error('No order found.'));
+        }
+        if (order.user.userId.toString() !== req.user._id.toString()) {
+            return next(Error('Unauthorised'));
+        }
+        const invoice = `invoice-${orderId}.pdf`;
+        const invoicePath = path.join('data', 'invoice', invoice);
+        // try {
+        //     await fs.promises.access(invoicePath);
+        // } catch (err) {
+        //     return next(Error('Invoice not found'));
+        // }
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename=${invoice}`);
+        doc.pipe(fs.createWriteStream(invoicePath));
+        doc.pipe(res);
+
+        doc.fontSize(26).text('Invoice', {
+            underline: true,
+            align: 'center'
+        });
+        doc.text('----------------------------------------');
+        let totalPrice = 0;
+        order.products.forEach(prod => {
+            totalPrice += prod.quantity * prod.product.price;
+            doc.fontSize(14).text(`${prod.product.title} - ${prod.quantity} x ${prod.product.price}`);
+        });
+        doc.text('-----------------------');
+        doc.fontSize(20).text(`Total Price: ${totalPrice}`);
+        doc.end();
+
+        //}
+        // const fileStream = fs.createReadStream(invoicePath);
+        // res.setHeader('Content-Type', 'application/pdf');
+        // res.setHeader('Content-Disposition', `inline; filename=${invoice}`);
+        // fileStream.pipe(res);
+    } catch (err) {
+        next(err);
+    }
+}
+
+const customerCheckout = async (req, res, next) => {
+    try {
+        const user = await req.user.populate('cart.items.productId')
+
+        const products = user.cart.items
+
+
+        res.render('shop/checkout', {
+            path: '/checkout',
+            pageTitle: 'Checkout',
+            products: products,
+            isAuthenticated: req.session.isLoggedIn,
+            totalSum: products.reduce((acc, item) => {
+                return acc + item.quantity * item.productId.price
+            }, 0)
+        })
+    } catch (err) {
+        return next(err);
+    }
+}
+//</editor-fold>
+
+const checkoutSession = async (req, res, next) => {
+    try {
+        const user = await req.user.populate('cart.items.productId')
+
+        const products = user.cart.items;
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: products.map(p => {
+                return {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: {
+                            name: p.productId.title,
+                        },
+                        unit_amount: p.productId.price * 100,
+                    },
+                    quantity: p.quantity
+                }
+            }),
+            mode: 'payment',
+            success_url: req.protocol + '://' + req.get('host') + '/success',
+            cancel_url: req.protocol + '://' + req.get('host') + '/cancel',
+        })
+        res.redirect(
+            303,
+            session.url
+        )
+    }catch(err){
+        return next(err);
+
+    }
+}
+
+module.exports = {
+    getIndex,
+    getProducts,
+    getProductDetails,
+    addToCart,
+    getUserCart,
+    removeFromCart,
+    createOrder,
+    getOrders,
+    getInvoice,
+    customerCheckout,
+    checkoutSession
+}

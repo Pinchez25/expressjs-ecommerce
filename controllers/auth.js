@@ -30,30 +30,15 @@ const userLogin = async (req, res) => {
     delete req.session.redirectTo;
 
     try {
-        const results = validationResult(req)
-
-        if (!results.isEmpty()) {
-            return res.render('auth/login', {
-                pageTitle: "Login",
-                path: '/auth/login',
-                isAuthenticated: req.session.isLoggedIn,
-                errorMessages: results.array(),
-                errorMessage:null,
-                oldInput: {
-                    email: email,
-                    password: password,
-                }
-            })
-        }
         const user = await User.findOne({email: email})
-        if(!user){
-           // req.flash('error', 'Invalid email and/or password')
+        if (!user) {
+            // req.flash('error', 'Invalid email and/or password')
             return res.render('auth/login', {
                 pageTitle: "Login",
                 path: '/auth/login',
                 isAuthenticated: req.session.isLoggedIn,
                 errorMessage: 'Invalid email and/or password',
-                errorMessages:[],
+                errorMessages: [],
                 oldInput: {
                     email: email,
                     password: password,
@@ -62,13 +47,13 @@ const userLogin = async (req, res) => {
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-           // req.flash('error', 'Invalid email and/or password')
+            // req.flash('error', 'Invalid email and/or password')
             return res.render('auth/login', {
                 pageTitle: "Login",
                 path: '/auth/login',
                 isAuthenticated: req.session.isLoggedIn,
-                errorMessage:'Invalid email and/or password',
-                errorMessages:[],
+                errorMessage: 'Invalid email and/or password',
+                errorMessages: [],
                 oldInput: {
                     email: email,
                     password: password,
@@ -78,7 +63,7 @@ const userLogin = async (req, res) => {
         req.session.isLoggedIn = true;
         req.session.user = user;
         req.session.save(err => {
-        res.redirect(redirectTo)
+            res.redirect(redirectTo)
             console.error(err);
         })
 
